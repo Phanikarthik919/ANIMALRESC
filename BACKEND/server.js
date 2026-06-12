@@ -10,6 +10,7 @@ const allowedOrigins = [
   'http://localhost:5175',
   'http://localhost:5173',
   'http://127.0.0.1:5175',
+  'https://animalresc.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
