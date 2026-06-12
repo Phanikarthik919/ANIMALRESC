@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
 import sadDogImg from '../assets/sad_dog.png';
 import happyDogImg from '../assets/happy_dog.png';
 
-const ReportRescue = ({ setView, refreshRescues }) => {
+const ReportRescue = () => {
+  const navigate = useNavigate();
+  const { fetchRescues } = useOutletContext();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -134,12 +137,12 @@ const ReportRescue = ({ setView, refreshRescues }) => {
         donationAmountNeeded: formData.needsDonation ? 500 : 0, // Default goal for now
         photoUrl: formData.photoUrl
       });
-      if (refreshRescues) await refreshRescues();
+      if (fetchRescues) await fetchRescues();
       
       // Keep the happy dog on screen for 2 seconds so the user can see it!
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      setView('list'); // Redirect to dashboard
+      navigate('/'); // Redirect to dashboard
     } catch (error) {
       console.error('Failed to submit rescue report:', error);
       alert('Failed to submit. Please ensure backend is running.');

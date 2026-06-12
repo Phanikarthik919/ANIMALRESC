@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import API_URL from './config/api';
+import React from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import RootLayout from './components/RootLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
@@ -16,43 +16,63 @@ import ReviewAdoptions from './pages/ReviewAdoptions';
 import Profile from './pages/Profile';
 import { AuthProvider } from './context/AuthContext';
 
+const routerObj = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        path: "",
+        element: <Dashboard />
+      },
+      {
+        path: "/new",
+        element: <ReportRescue />
+      },
+      {
+        path: "/contact",
+        element: <Contact />
+      },
+      {
+        path: "/campaigns",
+        element: <Campaigns />
+      },
+      {
+        path: "/volunteer",
+        element: <Volunteer />
+      },
+      {
+        path: "/blogs",
+        element: <Blogs />
+      },
+      {
+        path: "/login",
+        element: <Login />
+      },
+      {
+        path: "/register",
+        element: <Register />
+      },
+      {
+        path: "/apply-adoption",
+        element: <ApplyAdoption />
+      },
+      {
+        path: "/review-adoptions",
+        element: <ReviewAdoptions />
+      },
+      {
+        path: "/profile",
+        element: <Profile />
+      }
+    ]
+  }
+]);
+
 function App() {
-  const [rescues, setRescues] = useState([]);
-  const [selectedRescue, setSelectedRescue] = useState(null);
-  const [view, setView] = useState('list'); // list, new, contact, campaigns, volunteer, blogs, login, register, apply-adoption, review-adoptions
-
-  const fetchRescues = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/rescues`);
-      setRescues(response.data);
-    } catch (error) {
-      console.error('Error fetching rescues:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchRescues();
-  }, []);
-
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Navbar view={view} setView={setView} setSelectedRescue={setSelectedRescue} />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 flex-grow w-full">
-          {view === 'list' && <Dashboard rescues={rescues} setView={setView} fetchRescues={fetchRescues} setSelectedRescue={setSelectedRescue} />}
-          {view === 'new' && <ReportRescue setView={setView} refreshRescues={fetchRescues} />}
-          {view === 'contact' && <Contact />}
-          {view === 'campaigns' && <Campaigns />}
-          {view === 'volunteer' && <Volunteer />}
-          {view === 'blogs' && <Blogs />}
-          {view === 'login' && <Login setView={setView} />}
-          {view === 'register' && <Register setView={setView} />}
-          {view === 'apply-adoption' && <ApplyAdoption selectedRescue={selectedRescue} setView={setView} />}
-          {view === 'review-adoptions' && <ReviewAdoptions setView={setView} selectedRescue={selectedRescue} setSelectedRescue={setSelectedRescue} />}
-          {view === 'profile' && <Profile />}
-        </main>
-        <Footer />
-      </div>
+      <RouterProvider router={routerObj} />
     </AuthProvider>
   );
 }

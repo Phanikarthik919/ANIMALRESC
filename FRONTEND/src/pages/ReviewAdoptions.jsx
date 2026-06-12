@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
 import footprint from '../assets/footPrint.png';
 import { AuthContext } from '../context/AuthContext';
 
-const ReviewAdoptions = ({ setView, selectedRescue, setSelectedRescue }) => {
+const ReviewAdoptions = () => {
+  const navigate = useNavigate();
+  const { selectedRescue, setSelectedRescue } = useOutletContext();
   const { user } = useContext(AuthContext);
   
   // State
@@ -161,7 +164,7 @@ const ReviewAdoptions = ({ setView, selectedRescue, setSelectedRescue }) => {
         <button 
           onClick={() => {
             if (setSelectedRescue) setSelectedRescue(null);
-            setView('list');
+            navigate('/');
           }}
           className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-5 rounded-full transition cursor-pointer text-sm shadow-sm"
         >
@@ -181,7 +184,7 @@ const ReviewAdoptions = ({ setView, selectedRescue, setSelectedRescue }) => {
               <span className="text-3xl mb-2 block">🐾</span>
               <p className="text-sm text-gray-500 font-medium">You haven't reported any rescues yet.</p>
               <button
-                onClick={() => setView('new')}
+                onClick={() => navigate('/new')}
                 className="mt-4 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2 px-6 rounded-full text-sm transition shadow-sm"
               >
                 Report a Rescue

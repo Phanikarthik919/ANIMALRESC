@@ -1,8 +1,10 @@
 import React, { useEffect, useContext, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-const GoogleLoginButton = ({ setView, role = null }) => {
+const GoogleLoginButton = ({ role = null }) => {
   const { googleLogin, updateRole } = useContext(AuthContext);
+  const navigate = useNavigate();
   const buttonRef = useRef(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
@@ -18,9 +20,9 @@ const GoogleLoginButton = ({ setView, role = null }) => {
             if (res.isNewUser) {
               // If it's a new user, show the role selection popup
               setShowRoleModal(true);
-            } else if (setView) {
+            } else {
               // Existing user, proceed immediately
-              setView('list');
+              navigate('/');
             }
           }
         }

@@ -1,10 +1,23 @@
 import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import bgImage from '../assets/adoptPet.png';
 import animalSvg from '../assets/animal.svg';
+import {
+  formCard,
+  formTitle,
+  labelClass,
+  inputClass,
+  selectClass,
+  submitBtn,
+  formSidePanel,
+  errorClass,
+  linkClass,
+} from '../styles/common';
 
-const Register = ({ setView }) => {
+const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'user' });
   const [error, setError] = useState('');
   const { register } = useContext(AuthContext);
@@ -14,7 +27,7 @@ const Register = ({ setView }) => {
     setError('');
     const res = await register(formData);
     if (res.success) {
-      setView('list');
+      navigate('/');
     } else {
       setError(res.message);
     }
@@ -33,20 +46,20 @@ const Register = ({ setView }) => {
       />
       
       {/* Main Split-Pane Card */}
-      <div className="relative z-10 w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row-reverse m-4 md:m-8 animate-fadeInUp my-auto">
+      <div className={formCard + " md:flex-row-reverse my-auto"}>
         
         {/* Right Side (Form, since row-reverse) */}
         <div className="w-full md:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center relative bg-white">
           <button 
-            onClick={() => setView('list')} 
-            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={() => navigate('/')} 
+            className="mb-8 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors cursor-pointer"
             title="Back to Home"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
           
           <div>
-            <h2 className="mt-2 text-3xl font-extrabold text-brand-darkGrey">
+            <h2 className={formTitle}>
               Join the Network 🐾
             </h2>
             <p className="mt-2 text-sm text-gray-500">
@@ -54,25 +67,25 @@ const Register = ({ setView }) => {
             </p>
           </div>
           
-          {error && <div className="mt-4 bg-red-50 text-red-500 p-3 rounded-lg text-sm font-medium border border-red-100">{error}</div>}
+          {error && <div className={errorClass}>{error}</div>}
           
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input name="name" type="text" required className="appearance-none rounded-xl block w-full px-4 py-3 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary sm:text-sm transition-all bg-gray-50 focus:bg-white" placeholder="John Doe" value={formData.name} onChange={handleChange} />
+                <label className={labelClass}>Full Name</label>
+                <input name="name" type="text" required className={inputClass} placeholder="John Doe" value={formData.name} onChange={handleChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                <input name="email" type="email" required className="appearance-none rounded-xl block w-full px-4 py-3 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary sm:text-sm transition-all bg-gray-50 focus:bg-white" placeholder="john@example.com" value={formData.email} onChange={handleChange} />
+                <label className={labelClass}>Email address</label>
+                <input name="email" type="email" required className={inputClass} placeholder="john@example.com" value={formData.email} onChange={handleChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input name="password" type="password" required className="appearance-none rounded-xl block w-full px-4 py-3 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary sm:text-sm transition-all bg-gray-50 focus:bg-white" placeholder="Min. 6 characters" minLength="6" value={formData.password} onChange={handleChange} />
+                <label className={labelClass}>Password</label>
+                <input name="password" type="password" required className={inputClass} placeholder="Min. 6 characters" minLength="6" value={formData.password} onChange={handleChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">I want to register as a:</label>
-                <select name="role" value={formData.role} onChange={handleChange} className="appearance-none rounded-xl block w-full px-4 py-3 border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary sm:text-sm transition-all bg-gray-50 focus:bg-white cursor-pointer">
+                <label className={labelClass}>I want to register as a:</label>
+                <select name="role" value={formData.role} onChange={handleChange} className={selectClass}>
                   <option value="user">Adopter / General Public</option>
                   <option value="volunteer">Volunteer / Rescue Worker</option>
                 </select>
@@ -80,7 +93,7 @@ const Register = ({ setView }) => {
             </div>
             
             <div className="pt-2">
-              <button type="submit" className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-brand-primary hover:bg-brand-primaryDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+              <button type="submit" className={submitBtn}>
                 Create Account
               </button>
             </div>
@@ -95,12 +108,12 @@ const Register = ({ setView }) => {
             </div>
             
             <div className="-mt-2">
-              <GoogleLoginButton setView={setView} role={formData.role} />
+              <GoogleLoginButton role={formData.role} />
             </div>
             
             <div className="text-center text-sm text-gray-600 mt-2">
               Already have an account?{' '}
-              <button type="button" onClick={() => setView('login')} className="font-bold text-brand-primary hover:text-brand-primaryDark transition-colors">
+              <button type="button" onClick={() => navigate('/login')} className={linkClass}>
                 Sign in
               </button>
             </div>
@@ -108,7 +121,7 @@ const Register = ({ setView }) => {
         </div>
         
         {/* Left Side (Visual, since row-reverse) */}
-        <div className="hidden md:flex w-full md:w-1/2 bg-gradient-to-br from-indigo-50 to-brand-primaryLight/30 items-center justify-center relative p-12">
+        <div className={formSidePanel}>
           <img src={animalSvg} alt="Animals" className="w-full max-w-sm relative z-10 drop-shadow-xl" />
         </div>
       </div>

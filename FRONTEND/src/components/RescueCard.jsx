@@ -1,14 +1,31 @@
 import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
 import defaultPetImg from '../assets/postPet.png';
 import { AuthContext } from '../context/AuthContext';
 import DonateModal from './DonateModal';
+import {
+  cardClass,
+  badgeBase,
+  badgePending,
+  badgeRescued,
+  badgeTreated,
+  badgeAdoption,
+  badgeRehomed,
+  volunteerBadge,
+  warningBadge,
+  outlineBtn,
+  primaryBtnFull,
+  dangerBtn,
+  donateBtn,
+} from '../styles/common';
 
-const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
+const RescueCard = ({ rescue, refreshRescues, setSelectedRescue }) => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [showDonateModal, setShowDonateModal] = useState(false);
+  const navigate = useNavigate();
 
   const canClaim = user && (user.role === 'volunteer' || user.role === 'admin');
 
@@ -50,23 +67,17 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-red-100 text-red-800 border border-red-200';
-      case 'Rescued from Location':
-        return 'bg-amber-100 text-amber-800 border border-amber-200';
-      case 'Rescued and Treated':
-        return 'bg-blue-100 text-blue-800 border border-blue-200';
-      case 'Ready for Adoption':
-        return 'bg-green-100 text-green-800 border border-green-200';
-      case 'Rehomed':
-        return 'bg-gray-100 text-gray-850 border border-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border border-gray-200';
+      case 'Pending':               return badgePending;
+      case 'Rescued from Location': return badgeRescued;
+      case 'Rescued and Treated':   return badgeTreated;
+      case 'Ready for Adoption':    return badgeAdoption;
+      case 'Rehomed':               return badgeRehomed;
+      default:                      return badgeRehomed;
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 ease-in-out group flex flex-col">
+    <div className={cardClass + " group flex flex-col"}>
       <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden border-b border-gray-100">
         {rescue.photoUrl ? (
           <img src={rescue.photoUrl} alt="Rescue Animal" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -77,7 +88,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
       <div className="p-6 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-xl font-semibold text-gray-900 leading-tight">{rescue.title}</h3>
-          <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${getStatusBadgeClass(rescue.status)}`}>
+          <span className={`${badgeBase} ${getStatusBadgeClass(rescue.status)}`}>
             {rescue.status}
           </span>
         </div>
@@ -107,7 +118,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
         </div>
         
         {rescue.claimedBy && rescue.claimedBy.name && (
-          <div className="mb-4 text-xs font-semibold text-brand-primary bg-indigo-50 border border-indigo-100 inline-block px-3 py-1 rounded-full">
+          <div className={volunteerBadge}>
             👤 Caring Volunteer: {rescue.claimedBy.name}
           </div>
         )}
@@ -129,7 +140,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
             <button 
               onClick={handleClaim}
               disabled={loading}
-              className={`w-full bg-white border border-brand-primary text-brand-primary hover:bg-indigo-50 font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`${outlineBtn} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Claiming...' : 'Claim Rescue'}
             </button>
@@ -139,7 +150,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
             <button 
               onClick={() => handleStatusUpdate('Rescued and Treated')}
               disabled={loading}
-              className={`w-full bg-white border border-brand-primary text-brand-primary hover:bg-indigo-50 font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`${outlineBtn} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Updating...' : '🏥 Mark as Rescued & Treated'}
             </button>
@@ -149,7 +160,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
             <button 
               onClick={() => handleStatusUpdate('Ready for Adoption')}
               disabled={loading}
-              className={`w-full bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`${primaryBtnFull} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Updating...' : '🏡 Mark as Ready for Adoption'}
             </button>
@@ -159,15 +170,17 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
               {isClaimedByMe ? (
                 <button 
                   onClick={() => {
-                    setSelectedRescue(rescue);
-                    setView('review-adoptions');
+                    if (setSelectedRescue) {
+                      setSelectedRescue(rescue);
+                      navigate('/review-adoptions');
+                    }
                   }}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm flex items-center justify-center gap-2"
+                  className={primaryBtnFull + " flex items-center justify-center gap-2"}
                 >
                   📋 Review Applications
                 </button>
               ) : isReportedByMe ? (
-                <div className="w-full bg-amber-50 border border-amber-200 text-amber-700 font-semibold py-2 px-4 rounded-lg text-center text-sm">
+                <div className={warningBadge}>
                   ⚠️ You reported this rescue — you cannot adopt your own rescue.
                 </div>
               ) : (
@@ -175,12 +188,12 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
                   onClick={() => {
                     if (!user) {
                       alert('Please sign in or sign up first to submit an adoption application.');
-                    } else {
+                    } else if (setSelectedRescue) {
                       setSelectedRescue(rescue);
-                      setView('apply-adoption');
+                      navigate('/apply-adoption');
                     }
                   }}
-                  className="w-full bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm"
+                  className={primaryBtnFull}
                 >
                   🐾 Apply to Adopt
                 </button>
@@ -192,7 +205,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
             <button 
               onClick={() => handleStatusUpdate('Rehomed')}
               disabled={loading}
-              className={`w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`${dangerBtn} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Updating...' : '🎉 Mark as Rehomed (Manual)'}
             </button>
@@ -201,7 +214,7 @@ const RescueCard = ({ rescue, refreshRescues, setView, setSelectedRescue }) => {
         {rescue.needsDonation && rescue.status !== 'Rehomed' && (
             <button 
               onClick={() => setShowDonateModal(true)}
-              className="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer shadow-sm"
+              className={donateBtn}
             >
               💚 Donate to Help
             </button>

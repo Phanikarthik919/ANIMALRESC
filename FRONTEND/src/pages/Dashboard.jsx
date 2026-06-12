@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import Hero from '../components/Hero';
 import RescueCard from '../components/RescueCard';
 import ServicesSection from '../components/ServicesSection';
@@ -6,7 +7,8 @@ import footprint from '../assets/footPrint.png';
 import doggie from '../assets/sad_dog.png';
 import { AuthContext } from '../context/AuthContext';
 
-const Dashboard = ({ rescues, setView, fetchRescues, setSelectedRescue }) => {
+const Dashboard = () => {
+  const { rescues, fetchRescues, setSelectedRescue } = useOutletContext();
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('All');
   const [showOnlyMyClaims, setShowOnlyMyClaims] = useState(false);
@@ -32,7 +34,8 @@ const Dashboard = ({ rescues, setView, fetchRescues, setSelectedRescue }) => {
 
   return (
     <div className="px-4 py-6 sm:px-0">
-      <Hero setView={setView} />
+      {/* Hero Section */}
+      <Hero />
       
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-5">
         <div className="flex items-center flex-wrap gap-4">
@@ -80,7 +83,7 @@ const Dashboard = ({ rescues, setView, fetchRescues, setSelectedRescue }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredRescues.map(rescue => (
-            <RescueCard key={rescue._id} rescue={rescue} refreshRescues={fetchRescues} setView={setView} setSelectedRescue={setSelectedRescue} />
+            <RescueCard key={rescue._id} rescue={rescue} refreshRescues={fetchRescues} setSelectedRescue={setSelectedRescue} />
           ))}
         </div>
       )}
@@ -94,13 +97,14 @@ const Dashboard = ({ rescues, setView, fetchRescues, setSelectedRescue }) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {rehomedRescues.map(rescue => (
-              <RescueCard key={rescue._id} rescue={rescue} refreshRescues={fetchRescues} setView={setView} setSelectedRescue={setSelectedRescue} />
+              <RescueCard key={rescue._id} rescue={rescue} refreshRescues={fetchRescues} setSelectedRescue={setSelectedRescue} />
             ))}
           </div>
         </div>
       )}
 
-      <ServicesSection setView={setView} setActiveTab={setActiveTab} />
+      {/* Services Section */}
+      <ServicesSection setActiveTab={setActiveTab} />
     </div>
   );
 };

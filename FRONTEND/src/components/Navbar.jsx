@@ -1,17 +1,27 @@
 import React, { useState, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { AuthContext } from '../context/AuthContext';
-
 import defaultAvatar from '../assets/cute monkey animal.svg';
+import {
+  navbarClass,
+  navContainerClass,
+  navInnerClass,
+  navLinkClass,
+  navCtaBtn,
+  sosBarClass,
+} from '../styles/common';
 
-const Navbar = ({ view, setView, setSelectedRescue }) => {
+const Navbar = ({ setSelectedRescue }) => {
   const [showSOS, setShowSOS] = useState(true);
   const { user, logout } = useContext(AuthContext);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <>
       {showSOS && (
-        <div className="bg-red-600 text-white py-2 px-4 font-bold text-sm tracking-wide shadow-inner flex justify-between items-center relative z-50">
+        <div className={sosBarClass}>
           <div className="flex-1 text-center flex justify-center items-center">
             <span className="mr-2 animate-pulse">🚨 EMERGENCY SOS: See an animal in immediate danger?</span> 
             <a href="tel:+919920737737" className="underline hover:text-red-200 transition">Call +91 9920 737 737 Now</a>
@@ -25,10 +35,10 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
           </button>
         </div>
       )}
-      <nav className="bg-white shadow-sm sticky top-0 z-40 glassmorphism border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('list')}>
+      <nav className={navbarClass}>
+        <div className={navContainerClass}>
+          <div className={navInnerClass}>
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
               {/* Logo Image */}
               <div className="relative w-12 h-12 flex items-center justify-center bg-brand-primaryLight/30 rounded-xl group-hover:bg-brand-primaryLight/50 transition-colors">
                 <img 
@@ -50,20 +60,20 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-6">
               <button 
-                onClick={() => setView('list')} 
-                className={`px-3 py-2 rounded-md text-sm font-bold transition-all ${view === 'list' ? 'text-brand-primary bg-orange-50' : 'text-gray-500 hover:text-brand-primary hover:bg-orange-50'}`}
+                onClick={() => navigate('/')} 
+                className={navLinkClass(location.pathname === '/')}
               >
                 Dashboard
               </button>
               <button 
-                onClick={() => setView('campaigns')} 
-                className={`px-3 py-2 rounded-md text-sm font-bold transition-all ${view === 'campaigns' ? 'text-brand-primary bg-orange-50' : 'text-gray-500 hover:text-brand-primary hover:bg-orange-50'}`}
+                onClick={() => navigate('/campaigns')} 
+                className={navLinkClass(location.pathname === '/campaigns')}
               >
                 Campaigns
               </button>
               <button 
-                onClick={() => setView('blogs')} 
-                className={`px-3 py-2 rounded-md text-sm font-bold transition-all ${view === 'blogs' ? 'text-brand-primary bg-orange-50' : 'text-gray-500 hover:text-brand-primary hover:bg-orange-50'}`}
+                onClick={() => navigate('/blogs')} 
+                className={navLinkClass(location.pathname === '/blogs')}
               >
                 Blogs
               </button>
@@ -71,16 +81,16 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
                 <button 
                   onClick={() => {
                     if (setSelectedRescue) setSelectedRescue(null);
-                    setView('review-adoptions');
+                    navigate('/review-adoptions');
                   }} 
-                  className={`px-3 py-2 rounded-md text-sm font-bold transition-all ${view === 'review-adoptions' ? 'text-brand-primary bg-indigo-50' : 'text-gray-500 hover:text-brand-primary hover:bg-indigo-50'}`}
+                  className={navLinkClass(location.pathname === '/review-adoptions')}
                 >
                   {user.role === 'user' ? 'My Applications' : 'Review Applications'}
                 </button>
               )}
               <button 
-                onClick={() => setView('new')} 
-                className={`ml-4 px-5 py-2.5 rounded-full text-sm font-bold transition-all transform hover:-translate-y-0.5 shadow-sm ${view === 'new' ? 'bg-brand-primaryDark text-white shadow-md' : 'bg-brand-primary text-white hover:shadow-md'}`}
+                onClick={() => navigate('/new')} 
+                className={navCtaBtn}
               >
                 Report Rescue
               </button>
@@ -90,7 +100,7 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
                 {user ? (
                   <div className="flex items-center gap-3">
                     <div 
-                      onClick={() => setView('profile')}
+                      onClick={() => navigate('/profile')}
                       className="flex items-center gap-3 bg-gray-50 px-2 py-1.5 rounded-full border border-gray-100 shadow-sm cursor-pointer hover:bg-gray-100 hover:border-brand-primary/30 transition-all"
                       title="View Profile"
                     >
@@ -107,7 +117,7 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => { logout(); setView('list'); }} 
+                      onClick={() => { logout(); navigate('/'); }} 
                       className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all"
                       title="Logout"
                     >
@@ -117,13 +127,13 @@ const Navbar = ({ view, setView, setSelectedRescue }) => {
                 ) : (
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={() => setView('login')} 
-                      className="text-gray-600 hover:text-brand-primary text-sm font-bold transition-colors"
+                      onClick={() => navigate('/login')} 
+                      className="text-gray-600 hover:text-brand-primary font-bold text-sm transition-colors cursor-pointer"
                     >
-                      Sign In
+                      Log in
                     </button>
                     <button 
-                      onClick={() => setView('register')} 
+                      onClick={() => navigate('/register')} 
                       className="border border-gray-300 text-gray-600 hover:border-brand-primary hover:text-brand-primary px-4 py-2 rounded-full text-sm font-bold transition-all"
                     >
                       Sign Up

@@ -1,9 +1,15 @@
 import React from 'react';
+import {
+  footerClass,
+  footerContainer,
+  footerLinkClass,
+  footerInputClass,
+} from '../styles/common';
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-darkGrey text-white pt-16 pb-8 border-t-4 border-brand-primary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className={footerClass}>
+      <div className={footerContainer}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           
           <div className="md:col-span-1">
@@ -16,10 +22,10 @@ const Footer = () => {
           <div className="md:col-span-1">
             <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-brand-primary transition">Dashboard</a></li>
-              <li><a href="#" className="hover:text-brand-primary transition">Report Rescue</a></li>
-              <li><a href="#" className="hover:text-brand-primary transition">Campaigns</a></li>
-              <li><a href="#" className="hover:text-brand-primary transition">Blogs</a></li>
+              <li><a href="#" className={footerLinkClass}>Dashboard</a></li>
+              <li><a href="#" className={footerLinkClass}>Report Rescue</a></li>
+              <li><a href="#" className={footerLinkClass}>Campaigns</a></li>
+              <li><a href="#" className={footerLinkClass}>Blogs</a></li>
             </ul>
           </div>
 
@@ -30,7 +36,7 @@ const Footer = () => {
               <input 
                 type="email" 
                 placeholder="Enter your email" 
-                className="w-full bg-white/10 text-white placeholder-gray-400 border border-transparent rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className={footerInputClass}
               />
               <button className="bg-brand-primary hover:bg-brand-primaryDark text-white font-bold px-6 py-2 rounded-r-lg transition">
                 Subscribe

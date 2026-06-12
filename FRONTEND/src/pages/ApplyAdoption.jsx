@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
 import footprint from '../assets/footPrint.png';
 
-const ApplyAdoption = ({ selectedRescue, setView }) => {
+const ApplyAdoption = () => {
+  const navigate = useNavigate();
+  const { selectedRescue } = useOutletContext();
   const [formData, setFormData] = useState({
     phone: '',
     address: '',
@@ -20,7 +23,7 @@ const ApplyAdoption = ({ selectedRescue, setView }) => {
       <div className="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
         <h3 className="text-2xl font-bold text-gray-805 mb-2">No animal selected</h3>
         <button 
-          onClick={() => setView('list')}
+          onClick={() => navigate('/')}
           className="mt-4 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold py-2.5 px-6 rounded-full shadow transition cursor-pointer"
         >
           Back to Dashboard
@@ -79,7 +82,7 @@ const ApplyAdoption = ({ selectedRescue, setView }) => {
       });
       setSuccess(true);
       setTimeout(() => {
-        setView('list');
+        navigate('/');
       }, 3000);
     } catch (err) {
       console.error('Error submitting adoption application:', err);
@@ -251,7 +254,7 @@ const ApplyAdoption = ({ selectedRescue, setView }) => {
               <div className="flex gap-4 pt-4 border-t">
                 <button
                   type="button"
-                  onClick={() => setView('list')}
+                  onClick={() => navigate('/')}
                   className="flex-1 bg-gray-150 hover:bg-gray-200 text-gray-750 font-bold py-3.5 px-4 rounded-xl transition cursor-pointer text-center"
                 >
                   Cancel

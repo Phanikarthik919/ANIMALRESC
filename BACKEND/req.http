@@ -1,0 +1,100 @@
+### ==========================================
+### AUTHENTICATION
+### ==========================================
+
+### Register User
+POST http://localhost:5001/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "user"
+}
+
+### Login
+# @name login
+POST http://localhost:5001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### Get Current User Profile (Requires Token)
+GET http://localhost:5001/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+
+### ==========================================
+### RESCUES
+### ==========================================
+
+### Get All Rescues
+GET http://localhost:5001/api/rescues
+
+### Report a New Rescue (Optional Token)
+POST http://localhost:5001/api/rescues
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "title": "Injured Dog on Main St",
+  "description": "Found a dog with a hurt leg near the bakery.",
+  "location": {
+    "address": "123 Main St, Cityville",
+    "lat": 19.0760,
+    "lng": 72.8777
+  },
+  "needsDonation": true,
+  "donationAmountNeeded": 500
+}
+
+### Claim a Rescue (Requires Volunteer/Admin Token)
+# Replace :id with a valid rescue ID
+PUT http://localhost:5001/api/rescues/64abc1234567890def123456/claim
+Authorization: Bearer {{login.response.body.token}}
+
+### Update Rescue Status (Requires Volunteer/Admin Token)
+# Replace :id with a valid rescue ID
+# Valid statuses: 'Rescued from Location', 'Rescued and Treated', 'Ready for Adoption', 'Rehomed'
+PUT http://localhost:5001/api/rescues/64abc1234567890def123456/status
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "status": "Rescued and Treated"
+}
+
+
+### ==========================================
+### ADOPTIONS
+### ==========================================
+
+### Submit an Adoption Application (Requires Token)
+POST http://localhost:5001/api/adoptions
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "rescueId": "64abc1234567890def123456",
+  "phone": "+919876543210",
+  "address": "456 Oak Lane, Cityville",
+  "message": "We have a big fenced yard and love dogs!"
+}
+
+### Get All Adoption Applications (Requires Volunteer/Admin Token)
+GET http://localhost:5001/api/adoptions
+Authorization: Bearer {{login.response.body.token}}
+
+### Approve/Reject Adoption Application (Requires Volunteer/Admin Token)
+# Replace :id with a valid adoption application ID
+PUT http://localhost:5001/api/adoptions/64def1234567890abc123456/status
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.token}}
+
+{
+  "status": "Approved"
+}
