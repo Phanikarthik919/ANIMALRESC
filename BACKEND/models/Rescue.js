@@ -45,6 +45,23 @@ const RescueSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  aiTriage: {
+    isAnimalDetected: { type: Boolean, default: false },
+    species: { type: String, default: 'Unknown' },
+    breedEstimation: { type: String, default: '' },
+    injuryDetected: { type: Boolean, default: false },
+    injuryType: { type: String, default: '' },
+    severity: {
+      type: String,
+      enum: ['Critical', 'High', 'Medium', 'Low', 'None'],
+      default: 'Medium'
+    },
+    triageScore: { type: Number, default: 50 },
+    urgencyWindow: { type: String, default: 'Normal' },
+    suggestedFirstAid: { type: String, default: '' },
+    clinicalNotes: { type: String, default: '' },
+    analyzedAt: { type: Date }
+  },
   createdAt: {
     type: Date,
     default: Date.now

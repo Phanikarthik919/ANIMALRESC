@@ -25,6 +25,7 @@ const RescueCard = ({ rescue, refreshRescues, setSelectedRescue }) => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [showDonateModal, setShowDonateModal] = useState(false);
+  const [showTriageModal, setShowTriageModal] = useState(false);
   const navigate = useNavigate();
 
   const canClaim = user && (user.role === 'volunteer' || user.role === 'admin');
@@ -77,8 +78,26 @@ const RescueCard = ({ rescue, refreshRescues, setSelectedRescue }) => {
   };
 
   return (
-    <div className={cardClass + " group flex flex-col"}>
+    <div className={cardClass + " group flex flex-col relative"}>
       <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden border-b border-gray-100">
+        {/* AI Triage Priority Overlay */}
+        {rescue.aiTriage && rescue.aiTriage.severity && rescue.aiTriage.severity !== 'None' && (
+          <div className="absolute top-3 left-3 z-10 shadow-lg">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow ${
+              rescue.aiTriage.severity === 'Critical' 
+                ? 'bg-red-600 text-white animate-pulse' 
+                : rescue.aiTriage.severity === 'High' 
+                ? 'bg-orange-600 text-white' 
+                : rescue.aiTriage.severity === 'Medium' 
+                ? 'bg-amber-500 text-white' 
+                : 'bg-emerald-600 text-white'
+            }`}>
+              <span>{rescue.aiTriage.severity === 'Critical' ? '🚨' : rescue.aiTriage.severity === 'High' ? '⚠️' : '🩺'}</span>
+              <span>Priority: {rescue.aiTriage.triageScore || 50}/100</span>
+            </span>
+          </div>
+        )}
+
         {rescue.photoUrl ? (
           <img src={rescue.photoUrl} alt="Rescue Animal" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
@@ -86,12 +105,29 @@ const RescueCard = ({ rescue, refreshRescues, setSelectedRescue }) => {
         )}
       </div>
       <div className="p-6 flex-grow flex flex-col">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl font-semibold text-gray-900 leading-tight">{rescue.title}</h3>
           <span className={`${badgeBase} ${getStatusBadgeClass(rescue.status)}`}>
             {rescue.status}
           </span>
         </div>
+
+        {/* AI Triage Quick Link */}
+        {rescue.aiTriage && rescue.aiTriage.injuryType && (
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-xs text-gray-500 font-medium truncate max-w-[65%]">
+              🧬 {rescue.aiTriage.species} • {rescue.aiTriage.injuryType}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowTriageModal(true)}
+              className="text-xs font-bold text-brand-primary hover:text-brand-primaryDark hover:underline cursor-pointer"
+            >
+              🩺 AI Report
+            </button>
+          </div>
+        )}
+
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{rescue.description}</p>
         
         <div className="flex flex-col text-sm text-gray-500 mb-4 gap-1.5">
@@ -229,6 +265,99 @@ const RescueCard = ({ rescue, refreshRescues, setSelectedRescue }) => {
           onClose={() => setShowDonateModal(false)} 
           onDonated={refreshRescues} 
         />
+      )}
+
+      {/* AI Triage Report Modal */}
+      {showTriageModal && rescue.aiTriage && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+            <button
+              onClick={() => setShowTriageModal(false)}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-3 mb-5 border-b pb-4">
+              <span className="text-3xl">🩺</span>
+              <div>
+                <h3 className="text-xl font-black text-gray-900">AI Veterinary Triage Assessment</h3>
+                <p className="text-xs text-gray-500">Autonomous multimodal clinical evaluation</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Emergency Severity Header */}
+              <div className="flex items-center justify-between p-4 bg-orange-50/80 rounded-2xl border border-orange-200">
+                <div>
+                  <span className="text-xs text-orange-800 font-bold uppercase tracking-wider block">Priority Score</span>
+                  <span className="text-2xl font-black text-brand-primary">{rescue.aiTriage.triageScore || 50}/100</span>
+                </div>
+                <span className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider ${
+                  rescue.aiTriage.severity === 'Critical' ? 'bg-red-600 text-white animate-pulse' :
+                  rescue.aiTriage.severity === 'High' ? 'bg-orange-600 text-white' :
+                  rescue.aiTriage.severity === 'Medium' ? 'bg-amber-500 text-white' :
+                  'bg-emerald-600 text-white'
+                }`}>
+                  {rescue.aiTriage.severity} Severity
+                </span>
+              </div>
+
+              {/* Breakdown Grid */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <span className="text-gray-400 font-medium block">Species & Breed</span>
+                  <span className="font-bold text-gray-800 text-sm">{rescue.aiTriage.species}</span>
+                  {rescue.aiTriage.breedEstimation && (
+                    <span className="text-gray-500 block">{rescue.aiTriage.breedEstimation}</span>
+                  )}
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <span className="text-gray-400 font-medium block">Urgency Window</span>
+                  <span className="font-bold text-gray-800 text-sm">{rescue.aiTriage.urgencyWindow || 'Standard (< 6h)'}</span>
+                </div>
+              </div>
+
+              {/* Trauma Observation */}
+              {rescue.aiTriage.injuryType && (
+                <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+                  <span className="text-gray-400 font-bold block mb-1">🩹 Suspected Injury / Trauma:</span>
+                  <p className="text-gray-800 font-medium">{rescue.aiTriage.injuryType}</p>
+                </div>
+              )}
+
+              {/* Clinical Notes */}
+              {rescue.aiTriage.clinicalNotes && (
+                <div className="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 text-xs text-amber-950">
+                  <span className="font-bold block mb-1">🔍 Diagnostic Observations:</span>
+                  <p className="leading-relaxed">{rescue.aiTriage.clinicalNotes}</p>
+                </div>
+              )}
+
+              {/* First-Aid for Rescuers & Volunteers */}
+              {rescue.aiTriage.suggestedFirstAid && rescue.aiTriage.suggestedFirstAid !== 'N/A' && (
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-950">
+                  <span className="font-bold block mb-1.5 flex items-center gap-1.5 text-sm">
+                    <span>🩹</span> Rescuer Protocol & First-Aid:
+                  </span>
+                  <p className="leading-relaxed whitespace-pre-line">{rescue.aiTriage.suggestedFirstAid}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowTriageModal(false)}
+                className="bg-gray-900 hover:bg-black text-white font-bold text-xs py-2.5 px-6 rounded-full cursor-pointer transition"
+              >
+                Close Report
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

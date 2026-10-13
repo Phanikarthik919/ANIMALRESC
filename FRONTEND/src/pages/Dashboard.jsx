@@ -12,30 +12,79 @@ const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('All');
   const [showOnlyMyClaims, setShowOnlyMyClaims] = useState(false);
+  const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'recent'
+  const [severityFilter, setSeverityFilter] = useState('All'); // 'All' | 'Critical' | 'High' | 'Medium' | 'Low'
   
   const activeRescues = rescues.filter(r => r.status !== 'Rehomed');
   const rehomedRescues = rescues.filter(r => r.status === 'Rehomed');
 
   const tabs = ['All', 'Pending', 'Rescued from Location', 'Rescued and Treated', 'Ready for Adoption'];
   
-  const filteredRescues = activeRescues.filter(rescue => {
-    const matchesTab = activeTab === 'All' || rescue.status === activeTab;
-    
-    if (showOnlyMyClaims) {
-      const currentUserId = user ? (user.id || user._id) : null;
-      const isClaimedByMe = currentUserId && rescue.claimedBy && 
-        ((typeof rescue.claimedBy === 'string' && rescue.claimedBy === currentUserId) || 
-         (typeof rescue.claimedBy === 'object' && (rescue.claimedBy._id === currentUserId || rescue.claimedBy.id === currentUserId)));
-      return matchesTab && isClaimedByMe;
-    }
-    
-    return matchesTab;
-  });
+  // Filter and sort active rescues
+  const filteredRescues = activeRescues
+    .filter(rescue => {
+      const matchesTab = activeTab === 'All' || rescue.status === activeTab;
+      
+      if (!matchesTab) return false;
+
+      if (showOnlyMyClaims) {
+        const currentUserId = user ? (user.id || user._id) : null;
+        const isClaimedByMe = currentUserId && rescue.claimedBy && 
+          ((typeof rescue.claimedBy === 'string' && rescue.claimedBy === currentUserId) || 
+           (typeof rescue.claimedBy === 'object' && (rescue.claimedBy._id === currentUserId || rescue.claimedBy.id === currentUserId)));
+        if (!isClaimedByMe) return false;
+      }
+
+      if (severityFilter !== 'All') {
+        const sev = rescue.aiTriage?.severity || 'Medium';
+        if (sev !== severityFilter) return false;
+      }
+      
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priority') {
+        const scoreA = a.aiTriage?.triageScore ?? (a.aiTriage?.severity === 'Critical' ? 95 : a.aiTriage?.severity === 'High' ? 75 : 40);
+        const scoreB = b.aiTriage?.triageScore ?? (b.aiTriage?.severity === 'Critical' ? 95 : b.aiTriage?.severity === 'High' ? 75 : 40);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+  // Count critical/high cases needing help
+  const criticalCount = activeRescues.filter(r => r.status === 'Pending' && (r.aiTriage?.severity === 'Critical' || r.aiTriage?.severity === 'High')).length;
 
   return (
     <div className="px-4 py-6 sm:px-0">
       {/* Hero Section */}
       <Hero />
+
+      {/* Emergency Alert Banner if critical stray rescues exist */}
+      {criticalCount > 0 && (
+        <div className="mb-6 p-4 bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 rounded-2xl text-white shadow-lg flex items-center justify-between flex-wrap gap-3 animate-pulse">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🚨</span>
+            <div>
+              <h4 className="font-black text-sm uppercase tracking-wider">
+                {criticalCount} Critical Emergency Case{criticalCount > 1 ? 's' : ''} Awaiting Rescue
+              </h4>
+              <p className="text-xs text-white/90">
+                AI Triage has flagged life-threatening injuries requiring urgent volunteer dispatch.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setActiveTab('Pending');
+              setSeverityFilter('Critical');
+              setSortBy('priority');
+            }}
+            className="bg-white text-red-700 font-extrabold text-xs px-4 py-2 rounded-full shadow hover:bg-orange-50 transition cursor-pointer"
+          >
+            View Critical Cases →
+          </button>
+        </div>
+      )}
       
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-5">
         <div className="flex items-center flex-wrap gap-4">
@@ -62,7 +111,7 @@ const Dashboard = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-sm ${
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer ${
                 activeTab === tab 
                   ? 'bg-brand-primary text-white shadow-md transform scale-105' 
                   : 'bg-white text-gray-500 border border-gray-200 hover:bg-orange-50 hover:text-brand-primary'
@@ -71,6 +120,47 @@ const Dashboard = () => {
               {tab}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* AI Triage Sorting & Filter Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-gray-200/70 text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-bold text-gray-700 flex items-center gap-1">
+            <span>🔬 AI Triage Filter:</span>
+          </span>
+          {['All', 'Critical', 'High', 'Medium', 'Low'].map(sev => (
+            <button
+              key={sev}
+              onClick={() => setSeverityFilter(sev)}
+              className={`px-3 py-1.5 rounded-full font-bold transition cursor-pointer ${
+                severityFilter === sev
+                  ? (sev === 'Critical' ? 'bg-red-600 text-white shadow-sm' :
+                     sev === 'High' ? 'bg-orange-600 text-white shadow-sm' :
+                     sev === 'Medium' ? 'bg-amber-500 text-white shadow-sm' :
+                     sev === 'Low' ? 'bg-emerald-600 text-white shadow-sm' :
+                     'bg-gray-900 text-white shadow-sm')
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+              }`}
+            >
+              {sev === 'Critical' ? '🚨 Critical' :
+               sev === 'High' ? '⚠️ High' :
+               sev === 'Medium' ? '🩺 Medium' :
+               sev === 'Low' ? '🟢 Low' : 'All'}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-gray-700">Sort by:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-white border border-gray-300 font-semibold text-gray-800 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-primary cursor-pointer text-xs"
+          >
+            <option value="priority">🚨 AI Emergency Priority (Highest First)</option>
+            <option value="recent">🕒 Most Recent First</option>
+          </select>
         </div>
       </div>
       

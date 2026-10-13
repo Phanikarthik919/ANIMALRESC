@@ -2,14 +2,37 @@ const express = require('express');
 const router = express.Router();
 const Rescue = require('../models/Rescue');
 const auth = require('../middleware/auth');
+const { analyzeRescueImage } = require('../services/aiTriageService');
 
-// Get all rescues
+// Get all rescues (supports ?sort=priority or ?sort=recent)
 router.get('/', async (req, res) => {
   try {
-    const rescues = await Rescue.find().sort({ createdAt: -1 }).populate('claimedBy', 'name email').populate('reportedBy', 'name email');
+    const { sort } = req.query;
+    let sortObj = { createdAt: -1 };
+    if (sort === 'priority') {
+      sortObj = { 'aiTriage.triageScore': -1, createdAt: -1 };
+    }
+    const rescues = await Rescue.find().sort(sortObj).populate('claimedBy', 'name email').populate('reportedBy', 'name email');
     res.json(rescues);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// AI Visual Triage endpoint for preview/real-time analysis
+router.post('/ai-triage', async (req, res) => {
+  try {
+    const { photoUrl, image } = req.body;
+    const targetImage = photoUrl || image;
+    if (!targetImage) {
+      return res.status(400).json({ message: 'No photoUrl or image provided for AI triage.' });
+    }
+
+    const triageResult = await analyzeRescueImage(targetImage);
+    res.json(triageResult);
+  } catch (err) {
+    console.error('AI Triage error:', err.message);
+    res.status(500).json({ message: 'AI triage analysis failed: ' + err.message });
   }
 });
 
@@ -27,8 +50,19 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-// Create a new rescue request
+// Create a new rescue request with AI Triage support
 router.post('/', optionalAuth, async (req, res) => {
+  let aiTriage = req.body.aiTriage;
+
+  // If user did not manually trigger triage beforehand, but uploaded a photo, attempt auto-triage
+  if (!aiTriage && req.body.photoUrl) {
+    try {
+      aiTriage = await analyzeRescueImage(req.body.photoUrl);
+    } catch (err) {
+      console.warn('Auto-triage skipped/failed:', err.message);
+    }
+  }
+
   const newRescue = new Rescue({
     title: req.body.title,
     description: req.body.description,
@@ -36,6 +70,7 @@ router.post('/', optionalAuth, async (req, res) => {
     location: req.body.location,
     needsDonation: req.body.needsDonation,
     donationAmountNeeded: req.body.donationAmountNeeded,
+    aiTriage: aiTriage || undefined,
     reportedBy: req.user ? req.user.id : null
   });
 
