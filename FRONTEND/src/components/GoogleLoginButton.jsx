@@ -33,14 +33,14 @@ const GoogleLoginButton = ({ role = null }) => {
         { theme: 'outline', size: 'large', width: '100%' } // Customize as needed
       );
     }
-  }, [googleLogin, setView, role]);
+  }, [googleLogin, navigate, role]);
 
   const handleRoleSelection = async (selectedRole) => {
     setIsUpdatingRole(true);
     const res = await updateRole(selectedRole);
-    if (res.success && setView) {
+    if (res.success) {
       setShowRoleModal(false);
-      setView('list');
+      navigate('/');
     }
     setIsUpdatingRole(false);
   };
